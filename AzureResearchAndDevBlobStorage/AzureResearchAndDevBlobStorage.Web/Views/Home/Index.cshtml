@@ -1,0 +1,40 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<div style="">
+    <form id="uploader" enctype="multipart/form-data">
+        <input id="fileInput" type="file" multiple>
+        <input type="submit" id="uploadBtn" value="Upload file" /><br />
+        <span style="border:thick;color:cornflowerblue" id="uploadStatus"></span>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $("#uploader").submit(function (event) {
+        var spanUploadStatus = $("#uploadStatus");
+        var formData = new FormData($('form')[0]);
+        formData.append('file', $('input[type=file]')[0].files[0]);    
+        $.ajax({
+            url: '/UploadImage/Index',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false
+        })
+          .success(function (data) {            
+              if (data.UploadStatus === 1) {
+                  spanUploadStatus.css("color", "red");
+              } else {
+                  spanUploadStatus.css("color", "cornflowerblue");
+              }
+              spanUploadStatus.html(data.Message);
+          })
+          .error(function (errorMsg) {
+              spanUploadStatus.css("color", "red");
+              $("#uploadStatus").html("Failed to upload resource");
+          });      
+        event.preventDefault();
+    });
+</script>
