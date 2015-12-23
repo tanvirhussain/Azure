@@ -17,24 +17,30 @@ namespace AzureResearchAndDevBlobStorage.Web.Controllers
         {
             _assetUploader = assetUploader;
         }
-
-        //
-        // GET: /UploadImage/
-        public ActionResult Index()
-        {
-            return View();
-        }
-
+      
         [HttpPost]
-        public void Index(HttpPostedFileBase file) 
+        public JsonResult Index() 
         {
-            if (file != null && file.ContentLength > 0)
+            var uploadResponse = new Models.UploadResponse();     
+
+            if (Request.Files.Count > 0)
             {
-                // extract only the filename
+                var file = Request.Files[0] as HttpPostedFileBase;
+                
                 var fileName = Path.GetFileName(file.FileName);
 
                 var uploadedUrl = _assetUploader.Upload(ConfigurationManager.AppSettings["StorageConnectionString"], fileName, file.InputStream);
-            }       
+
+                uploadResponse.Message = string.Format("Image has been uploaded to the following location : {0}", uploadedUrl);
+                uploadResponse.UploadStatus = (int)Enums.UploadStatus.Uploaded;
+            }
+            else 
+            {
+                uploadResponse.Message = "Please attach a file";
+                uploadResponse.UploadStatus = (int)Enums.UploadStatus.NoFile;
+            }
+
+            return Json(uploadResponse, JsonRequestBehavior.AllowGet);
         }
 	}
 }
